@@ -1,0 +1,7 @@
+{
+  "name": "fim_backend",
+  "description": "Desktop side fim component",
+  "path": "/home/chanderg/bin/fim_backend",
+  "type": "stdio",
+  "allowed_extensions": [ "frontend@fim.extension" ]
+}
