@@ -4,6 +4,7 @@
 # than text, mode.
 
 import sys, json, struct
+import subprocess
 
 # Read a message from stdin and decode it.
 def getMessage():
@@ -26,7 +27,21 @@ def sendMessage(encodedMessage):
   sys.stdout.write(encodedMessage['content'])
   sys.stdout.flush()
 
+def handleSwitchTab(receivedMessage):
+    """
+    Unpack message and use the list as input to dmenu. Get back the result and send it back to the
+    browser.
+    """
+    tablist = "\n".join(receivedMessage.split('\n')[1:])
+    proc = subprocess.Popen(['dmenu', '-l', '10', '-p', 'Switch:'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    # proc.stdin.write(tablist)
+    sel = proc.communicate(input=tablist)[0]
+
+    sendMessage(encodeMessage("switch-tab {0}".format(sel.split('|')[0])))
+
 while True:
   receivedMessage = getMessage()
   if (receivedMessage == "ping"):
     sendMessage(encodeMessage("pong"))
+  elif receivedMessage.startswith("switch-tab"):
+    handleSwitchTab(receivedMessage)
