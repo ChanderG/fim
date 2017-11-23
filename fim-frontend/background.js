@@ -15,6 +15,19 @@ port.onMessage.addListener((response) => {
       active: true
     });
   }
+
+  if(response.indexOf("search") === 0){
+    // if no arguments
+    if (response === "search ") return;
+    let url = "http://www.duckduckgo.com/?q=" + response.split(' ')[1]
+    browser.tabs.create({url: url})
+  }
+
+  if(response.indexOf("history") === 0){
+    // if no arguments
+    if (response === "history ") return;
+    browser.tabs.create({url: response.split(' ')[1]})
+  }
 });
 
 /*
@@ -45,6 +58,16 @@ const switchTab = () => {
   });
 }
 
+const search = () => {
+  let msgString = "search";
+  port.postMessage(msgString);
+}
+
+const history = () => {
+  let msgString = "history";
+  port.postMessage(msgString);
+}
+
 /*
  * Key bindings
  */
@@ -54,5 +77,12 @@ browser.commands.onCommand.addListener((command) => {
   switch(command) {
     case 'switch-tab':
       switchTab()
+      break;
+    case 'search':
+      search();
+      break;
+    case 'history':
+      history();
+      break;
   }
 });

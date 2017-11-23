@@ -39,9 +39,29 @@ def handleSwitchTab(receivedMessage):
 
     sendMessage(encodeMessage("switch-tab {0}".format(sel.split('|')[0])))
 
+def handleSearch():
+    """
+    Search in prev terms. Send output to ddg.
+    """
+    url = subprocess.check_output("sqlite3 ~/.mozilla/firefox/*.default/places.sqlite 'select url from moz_places WHERE url LIKE \"https://duckduckgo.com%\" ORDER BY frecency DESC;' | awk -F'?q=' '{print $2}' | awk -F'&t' '{print $1}' | tr + ' ' | dmenu -l 10 -i -p 'search>' | tr ' ' + ", shell=True)
+
+    sendMessage(encodeMessage("search {0}".format(url)))
+
+def handleHistory():
+    """
+    Search in history. Send output to ddg.
+    """
+    url = subprocess.check_output("sqlite3 -separator '  ^  ' ~/.mozilla/firefox/*.default/places.sqlite 'select url, title from moz_places order by frecency DESC;' | dmenu -l 10 -i -p 'history>' | awk  '{print $1}'", shell=True)
+
+    sendMessage(encodeMessage("history {0}".format(url)))
+
 while True:
   receivedMessage = getMessage()
   if (receivedMessage == "ping"):
     sendMessage(encodeMessage("pong"))
   elif receivedMessage.startswith("switch-tab"):
     handleSwitchTab(receivedMessage)
+  elif (receivedMessage == "search"):
+      handleSearch()
+  elif (receivedMessage == "history"):
+      handleHistory()
