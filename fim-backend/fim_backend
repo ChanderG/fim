@@ -4,28 +4,32 @@
 # than text, mode.
 
 import sys, json, struct
-import subprocess
+import subprocess, os
+import logging
+
+logging.basicConfig(filename='/home/chanderg/fim_backend.log', level=logging.DEBUG)
+logging.info("Started logging!!!")
 
 # Read a message from stdin and decode it.
 def getMessage():
-  rawLength = sys.stdin.read(4)
-  if len(rawLength) == 0:
-      sys.exit(0)
-  messageLength = struct.unpack('@I', rawLength)[0]
-  message = sys.stdin.read(messageLength)
-  return json.loads(message)
+    rawLength = sys.stdin.read(4)
+    if len(rawLength) == 0:
+        sys.exit(0)
+    messageLength = struct.unpack('@I', rawLength)[0]
+    message = sys.stdin.read(messageLength)
+    return json.loads(message)
 
 # Encode a message for transmission, given its content.
 def encodeMessage(messageContent):
-  encodedContent = json.dumps(messageContent)
-  encodedLength = struct.pack('@I', len(encodedContent))
-  return {'length': encodedLength, 'content': encodedContent}
+    encodedContent = json.dumps(messageContent)
+    encodedLength = struct.pack('@I', len(encodedContent))
+    return {'length': encodedLength, 'content': encodedContent}
 
 # Send an encoded message to stdout.
 def sendMessage(encodedMessage):
-  sys.stdout.write(encodedMessage['length'])
-  sys.stdout.write(encodedMessage['content'])
-  sys.stdout.flush()
+    sys.stdout.write(encodedMessage['length'])
+    sys.stdout.write(encodedMessage['content'])
+    sys.stdout.flush()
 
 def handleSwitchTab(receivedMessage):
     """
@@ -33,9 +37,11 @@ def handleSwitchTab(receivedMessage):
     browser.
     """
     tablist = "\n".join(receivedMessage.split('\n')[1:])
-    proc = subprocess.Popen(['dmenu', '-l', '10', '-p', 'Switch:'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    # proc.stdin.write(tablist)
-    sel = proc.communicate(input=tablist)[0]
+    re, we = os.pipe()
+    os.write(we, tablist)
+    os.close(we)
+
+    sel = subprocess.check_output(['dmenu', '-l', '10', '-p', 'Switch:'], stdin=re)
 
     sendMessage(encodeMessage("switch-tab {0}".format(sel.split('|')[0])))
 
@@ -55,13 +61,17 @@ def handleHistory():
 
     sendMessage(encodeMessage("history {0}".format(url)))
 
+def handle(msg):
+    if (receivedMessage == "ping"):
+        sendMessage(encodeMessage("pong"))
+    elif receivedMessage.startswith("switch-tab"):
+        handleSwitchTab(receivedMessage)
+    elif (receivedMessage == "search"):
+        handleSearch()
+    elif (receivedMessage == "history"):
+        handleHistory()
+
 while True:
-  receivedMessage = getMessage()
-  if (receivedMessage == "ping"):
-    sendMessage(encodeMessage("pong"))
-  elif receivedMessage.startswith("switch-tab"):
-    handleSwitchTab(receivedMessage)
-  elif (receivedMessage == "search"):
-      handleSearch()
-  elif (receivedMessage == "history"):
-      handleHistory()
+    receivedMessage = getMessage()
+    logging.info("Recv message from frontend: {0}".format(receivedMessage))
+    handle(receivedMessage)

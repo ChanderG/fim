@@ -6,7 +6,9 @@ var port = browser.runtime.connectNative("fim_backend");
 /*
 Listen for messages from the app.
 */
-port.onMessage.addListener((response) => {
+port.onMessage.addListener(responseCallback);
+
+function responseCallback(response) {
   console.log("Received: " + response);
 
   if(response.indexOf("switch-tab") === 0){
@@ -28,7 +30,7 @@ port.onMessage.addListener((response) => {
     if (response === "history ") return;
     browser.tabs.create({url: response.split(' ')[1]})
   }
-});
+}
 
 /*
 On a click on the browser action, send the app a message.
@@ -37,6 +39,10 @@ browser.browserAction.onClicked.addListener(() => {
   console.log("Sending:  ping");
   port.postMessage("ping");
 });
+
+function onError(error) {
+  console.log(`Error: ${error}`);
+}
 
 /*
  * Switch Tab function.
@@ -54,6 +60,7 @@ const switchTab = () => {
 	msgString += "\n"
       }
     }
+    console.log("Prepared message to backend: ", msgString)
     port.postMessage(msgString);
   });
 }
