@@ -13,9 +13,11 @@ function responseCallback(response) {
 
   if(response.indexOf("switch-tab") === 0){
     // parse out the number and switch
-    browser.tabs.update(Number(response.split(' ')[1]), {
-      active: true
-    });
+    tabnum = Number(response.split(' ')[1])
+    if (tabnum != -1)
+      browser.tabs.update(tabnum, {
+	active: true
+      });
   }
 
   if(response.indexOf("search") === 0){

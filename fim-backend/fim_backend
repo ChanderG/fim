@@ -14,7 +14,7 @@ logging.info("Started logging!!!")
 def getMessage():
     rawLength = sys.stdin.read(4)
     if len(rawLength) == 0:
-        sys.exit(0)
+        return None
     messageLength = struct.unpack('@I', rawLength)[0]
     message = sys.stdin.read(messageLength)
     return json.loads(message)
@@ -41,9 +41,14 @@ def handleSwitchTab(receivedMessage):
     os.write(we, tablist)
     os.close(we)
 
-    sel = subprocess.check_output(['dmenu', '-l', '10', '-p', 'Switch:'], stdin=re)
+    try:
+        sel = subprocess.check_output(['dmenu', '-i', '-l', '10', '-p', 'Switch:'], stdin=re)
+        msg = "switch-tab {0}".format(sel.split('|')[0])
+    except:
+        # tab selction cancelled
+        msg = "switch-tab -1"
 
-    sendMessage(encodeMessage("switch-tab {0}".format(sel.split('|')[0])))
+    sendMessage(encodeMessage(msg))
 
 def handleSearch():
     """
