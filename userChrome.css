@@ -1,0 +1,34 @@
+/*
+ * Obtained from: https://github.com/cmcaine/tridactyl/blob/master/src/static/userChrome-minimal.css
+ * on 19/01/2018 .
+ */
+
+/* Hide grey container box */
+:root:not([customizing]) #navigator-toolbox:not(:hover):not(:focus-within) { 
+    max-height: 0;
+    min-height: calc(0px); /* I have no idea why just using 0 or 0px does not work... */
+}
+
+/* Auto hide tab bar */
+:root:not([customizing]) #navigator-toolbox:not(:hover):not(:focus-within) #TabsToolbar {
+    visibility: collapse;
+}
+
+/* Auto hide nav bar */
+:root:not([customizing]) #navigator-toolbox:not(:hover):not(:focus-within) #nav-bar {
+    max-height: 0;
+    min-height: 0!important;
+    /* Use margin-bottom to allow trigger zones that are larger than the nav-bar */
+    margin-bottom: 0;
+    opacity: 0;
+}
+
+
+/* Make nav-bar thinner */
+#nav-bar{
+    padding-top: 1px !important;
+    padding-bottom: 0 !important;
+}
+
+/* Partial removal of black bottom 1px line shown in fullscreen mode */
+#navigator-toolbox::after { display: none !important; }
